@@ -88,6 +88,14 @@ class EcoflowPrivateApiClient(EcoflowApiClient):
         for sn, device in target_devices.items():
             self.send_get_message(sn, device.get_quota_message())
 
+    async def generator_maintenance_log(self, device_sn: str) -> dict[str, Any]:
+        """Smart Generator service log, as shown on the app's maintenance screen.
+
+        Undocumented app endpoint; a plain Bearer token is enough.
+        """
+        response = await self.__call_api("/iot-service/dg100/log", {"sn": device_sn})
+        return response["data"]
+
     def _device_registry(self) -> dict[str, Any]:
         from ..devices.registry import devices
         return devices

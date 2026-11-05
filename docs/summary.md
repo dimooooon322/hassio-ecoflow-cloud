@@ -2136,7 +2136,7 @@
 
 </p></details>
 
-<details><summary> SMART_GENERATOR <i>(sensors: 19, binary_sensors: 1, switches: 2)</i> </summary>
+<details><summary> SMART_GENERATOR <i>(sensors: 29, binary_sensors: 1, switches: 2)</i> </summary>
 <p>
 
 *Sensors*
@@ -2158,6 +2158,16 @@
 - Unit Number  _(disabled)_
 - Firmware Version  _(disabled)_
 - Cell ID  _(disabled)_
+- Last Oil Change
+- Hours Since Oil Change
+- Last Air Filter Cleaning
+- Hours Since Air Filter Cleaning
+- Last Sediment Cup
+- Hours Since Sediment Cup
+- Last Spark Plug
+- Hours Since Spark Plug
+- Last Spark Arrester
+- Hours Since Spark Arrester
 - Status
 
 *Binary sensors*
