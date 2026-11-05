@@ -9,6 +9,7 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import PERCENTAGE, UnitOfTime
 
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
+from custom_components.ecoflow_cloud.api.message import JSONMessage, Message
 from custom_components.ecoflow_cloud.binary_sensor import MiscBinarySensorEntity
 from custom_components.ecoflow_cloud.devices import BaseInternalDevice, const
 from custom_components.ecoflow_cloud.entities import BaseSensorEntity
@@ -17,7 +18,7 @@ from custom_components.ecoflow_cloud.sensor import (
     MilliVoltSensorEntity,
     MiscSensorEntity,
     OutWattsSensorEntity,
-    QuotaStatusSensorEntity,
+    QuotaScheduledStatusSensorEntity,
     TempSensorEntity,
     WattsSensorEntity,
 )
@@ -25,6 +26,11 @@ from custom_components.ecoflow_cloud.switch import EnabledEntity
 
 
 _MODULE_TYPE = 2
+
+# The generator only pushes telemetry on /app/device/property/<sn> while the
+# EcoFlow app has it open. Otherwise the only way to get data is to ask for it
+# with a latestQuotas request, so we poll on a fixed interval.
+_QUOTA_REFRESH_SEC = 30
 
 
 class _FuelLevelSensorEntity(BaseSensorEntity):
@@ -57,6 +63,12 @@ class SmartGenerator(BaseInternalDevice):
     """EcoFlow Smart Generator (gasoline and Dual Fuel)."""
 
     @override
+    def get_quota_message(self) -> Message:
+        # Matches what the EcoFlow app sends (sniffed): version 1.0 and no
+        # moduleType. The base class sends version 1.1 with moduleType 0.
+        return JSONMessage({"operateType": "latestQuotas", "params": {}})
+
+    @override
     def sensors(self, client: EcoflowApiClient) -> Sequence[SensorEntity]:
         return [
             OutWattsSensorEntity(client, self, "pd.acPower", const.AC_OUT_POWER),
@@ -77,7 +89,11 @@ class SmartGenerator(BaseInternalDevice):
             MiscSensorEntity(client, self, "pd.num", "Unit Number", False, diagnostic=True),
             MiscSensorEntity(client, self, "pd.ver", "Firmware Version", False, diagnostic=True),
             MiscSensorEntity(client, self, "pd.cellId", "Cell ID", False, diagnostic=True),
-            QuotaStatusSensorEntity(client, self),
+            # Same title/key as QuotaStatusSensorEntity so the existing
+            # "Status" entity is kept.
+            QuotaScheduledStatusSensorEntity(
+                client, self, _QUOTA_REFRESH_SEC, title="Status", key="status"
+            ),
         ]
 
     @override
