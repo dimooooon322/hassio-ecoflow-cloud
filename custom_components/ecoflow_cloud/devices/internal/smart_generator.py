@@ -74,17 +74,22 @@ class _RunTimeSensorEntity(_MinutesSensorEntity):
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
 
 
-class _MaintenanceTimeSensorEntity(BaseSensorEntity):
-    _attr_device_class = SensorDeviceClass.TIMESTAMP
-    _attr_icon = "mdi:wrench-clock"
-
-
 class _MaintenanceHoursSensorEntity(BaseSensorEntity):
-    # Engine hours, not wall-clock hours.
+    """Engine hours since a service; the service date is in the attributes."""
+
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_native_unit_of_measurement = UnitOfTime.HOURS
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_icon = "mdi:wrench-clock"
+
+    @override
+    def _updated(self, data: dict[str, Any]) -> None:
+        # The base class only writes state when the value changes. Some items
+        # have a date but no hours, so publish attribute changes too.
+        attrs_before = dict(self.extra_state_attributes or {})
+        super()._updated(data)
+        if dict(self.extra_state_attributes or {}) != attrs_before:
+            self.schedule_update_ha_state()
 
 
 def _maintenance_params(log: dict[str, Any]) -> dict[str, Any]:
@@ -194,9 +199,10 @@ class SmartGenerator(BaseInternalDevice):
     def _maintenance_sensors(self, client: EcoflowApiClient) -> list[SensorEntity]:
         sensors: list[SensorEntity] = []
         for key, title in _MAINTENANCE_ITEMS.items():
-            sensors.append(_MaintenanceTimeSensorEntity(client, self, f"maintenance.{key}.lastTime", f"Last {title}"))
             sensors.append(
-                _MaintenanceHoursSensorEntity(client, self, f"maintenance.{key}.hoursSince", f"Hours Since {title}")
+                _MaintenanceHoursSensorEntity(
+                    client, self, f"maintenance.{key}.hoursSince", f"Hours Since {title}", diagnostic=True
+                ).attr(f"maintenance.{key}.lastTime", "Last Service", None)
             )
         return sensors
 

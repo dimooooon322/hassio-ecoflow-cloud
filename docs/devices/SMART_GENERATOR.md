@@ -19,15 +19,10 @@
 - Unit Number (`pd.num`)   _(disabled)_
 - Firmware Version (`pd.ver`)   _(disabled)_
 - Cell ID (`pd.cellId`)   _(disabled)_
-- Last Oil Change (`maintenance.oil.lastTime`)
 - Hours Since Oil Change (`maintenance.oil.hoursSince`)
-- Last Air Filter Cleaning (`maintenance.elementClean.lastTime`)
 - Hours Since Air Filter Cleaning (`maintenance.elementClean.hoursSince`)
-- Last Sediment Cup (`maintenance.bowl.lastTime`)
 - Hours Since Sediment Cup (`maintenance.bowl.hoursSince`)
-- Last Spark Plug (`maintenance.plug.lastTime`)
 - Hours Since Spark Plug (`maintenance.plug.hoursSince`)
-- Last Spark Arrester (`maintenance.arrester.lastTime`)
 - Hours Since Spark Arrester (`maintenance.arrester.hoursSince`)
 - Status
 
